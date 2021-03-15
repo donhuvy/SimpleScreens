@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-This software is in the public domain under CC0 1.0 Universal plus a
-Grant of Patent License.
-
-To the extent possible under law, the author(s) have dedicated all
-copyright and related and neighboring rights to this software to the
-public domain worldwide. This software is distributed without any
-warranty.
-
-You should have received a copy of the CC0 Public Domain Dedication
-along with this software (see the LICENSE.md file). If not, see
-<http://creativecommons.org/publicdomain/zero/1.0/>.
--->
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-include="false" default-menu-title="AR Aging Summary">
 
-    <transition name="findInvoice"><default-response url="../../Invoice/FindInvoice"/></transition>
-    <transition name="findPayment"><default-response url="../../Payment/FindPayment"/></transition>
-    <transition name="editParty"><default-response url="//${appRoot}/Party/EditParty"/></transition>
+    <transition name="findInvoice">
+        <default-response url="../../Invoice/FindInvoice"/>
+    </transition>
+    <transition name="findPayment">
+        <default-response url="../../Payment/FindPayment"/>
+    </transition>
+    <transition name="editParty">
+        <default-response url="//${appRoot}/Party/EditParty"/>
+    </transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
 
     <actions>
@@ -26,11 +20,13 @@ along with this software (see the LICENSE.md file). If not, see
         <set field="periodDaysBd" from="new BigDecimal(periodDays)"/>
         <set field="dateField" from="dateField ?: 'invoiceDate'"/>
         <!-- FUTURE: [OrgTimeZoneMarker] instead of using Java system default TimeZone use one configured for the organization -->
-        <set field="asOfDate" from="asOfDate ? ec.l10n.parseTimestamp(asOfDate + ' 23:59:59.999', 'yyyy-MM-dd HH:mm:ss.SSS', null, TimeZone.getDefault()) : ec.user.nowTimestamp"/>
+        <set field="asOfDate"
+             from="asOfDate ? ec.l10n.parseTimestamp(asOfDate + ' 23:59:59.999', 'yyyy-MM-dd HH:mm:ss.SSS', null, TimeZone.getDefault()) : ec.user.nowTimestamp"/>
 
         <set field="orderBySave" from="orderByField ?: 'toName'"/>
         <set field="orderByField" from="null"/>
-        <entity-find entity-name="mantle.account.invoice.InvoicePaymentApplicationSummary" list="invoiceAgingList" use-clone="true">
+        <entity-find entity-name="mantle.account.invoice.InvoicePaymentApplicationSummary" list="invoiceAgingList"
+                     use-clone="true">
             <search-form-inputs/>
             <!-- IITM sub-select conditions -->
             <econditions combine="or">
@@ -59,14 +55,17 @@ along with this software (see the LICENSE.md file). If not, see
                     <econdition field-name="toAmountApplied" operator="is-null"/>
                 </econditions>
             </econditions>
-            <econdition field-name="statusId" operator="in" value="InvoiceFinalized,InvoiceSent,InvoiceAcked,InvoicePmtRecvd"/>
+            <econdition field-name="statusId" operator="in"
+                        value="InvoiceFinalized,InvoiceSent,InvoiceAcked,InvoicePmtRecvd"/>
             <select-field field-name="fromPartyId,toPartyId,toPseudoId,toName,invoiceId,invoiceDate,dueDate"/>
             <select-field field-name="itemsTotal,amountApplied,toAmountApplied"/>
         </entity-find>
-        <entity-find entity-name="mantle.account.payment.PaymentAndApplicationSummary" list="paymentAndAppList" use-clone="true">
+        <entity-find entity-name="mantle.account.payment.PaymentAndApplicationSummary" list="paymentAndAppList"
+                     use-clone="true">
             <econdition field-name="fromPartyId" from="toPartyId" ignore-if-empty="true"/>
             <econdition field-name="toPartyId" from="fromPartyId" ignore-if-empty="true"/>
-            <econdition field-name="paymentTypeEnumId" operator="in" value="PtInvoicePayment,PtPrePayment,PtPrePaymentInventory"/>
+            <econdition field-name="paymentTypeEnumId" operator="in"
+                        value="PtInvoicePayment,PtPrePayment,PtPrePaymentInventory"/>
             <econdition field-name="statusId" operator="in" value="PmntDelivered,PmntConfirmed"/>
             <econdition field-name="amount" operator="greater" from="0.0"/>
             <econdition field-name="effectiveDate" operator="less-equals" from="asOfDate"/>
@@ -148,67 +147,170 @@ along with this software (see the LICENSE.md file). If not, see
         <script>
             agingInfoList.add(totalsRow)
             BigDecimal unpaidAmount = totalsRow.unpaidAmount
-            if (unpaidAmount) agingInfoList.add([toName:'Percent', period0:((totalsRow.period0 ?: 0.0)/unpaidAmount)*100.0,
-                    period1:((totalsRow.period1 ?: 0.0)/unpaidAmount)*100.0, period2:((totalsRow.period2 ?: 0.0)/unpaidAmount)*100.0,
-                    period3:((totalsRow.period3 ?: 0.0)/unpaidAmount)*100.0, period4:((totalsRow.period4 ?: 0.0)/unpaidAmount)*100.0])
+            if (unpaidAmount) agingInfoList.add([toName:'Percent', period0:((totalsRow.period0 ?:
+            0.0)/unpaidAmount)*100.0,
+            period1:((totalsRow.period1 ?: 0.0)/unpaidAmount)*100.0, period2:((totalsRow.period2 ?:
+            0.0)/unpaidAmount)*100.0,
+            period3:((totalsRow.period3 ?: 0.0)/unpaidAmount)*100.0, period4:((totalsRow.period4 ?:
+            0.0)/unpaidAmount)*100.0])
         </script>
     </actions>
     <widgets>
         <form-single name="ReportOptions" transition=".">
-            <field name="formListFindId"><default-field><hidden/></default-field></field>
-            <field name="orderByField"><default-field><hidden/></default-field></field>
-            <field name="periodDays"><default-field><text-line size="2"/></default-field></field>
-            <field name="dateField"><default-field title="Age By"><drop-down><option key="invoiceDate" text="Invoice Date"/>
-                <option key="dueDate" text="Due Date"/></drop-down></default-field></field>
-            <field name="asOfDate"><default-field><date-time type="date"/></default-field></field>
-            <field name="submitButton"><default-field><submit text="Run Report"/></default-field></field>
-            <field-layout><field-row-big><field-ref name="periodDays"/><field-ref name="dateField"/><field-ref name="asOfDate"/>
-                <field-ref name="submitButton"/></field-row-big></field-layout>
+            <field name="formListFindId">
+                <default-field>
+                    <hidden/>
+                </default-field>
+            </field>
+            <field name="orderByField">
+                <default-field>
+                    <hidden/>
+                </default-field>
+            </field>
+            <field name="periodDays">
+                <default-field>
+                    <text-line size="2"/>
+                </default-field>
+            </field>
+            <field name="dateField">
+                <default-field title="Age By">
+                    <drop-down>
+                        <option key="invoiceDate" text="Invoice Date"/>
+                        <option key="dueDate" text="Due Date"/>
+                    </drop-down>
+                </default-field>
+            </field>
+            <field name="asOfDate">
+                <default-field>
+                    <date-time type="date"/>
+                </default-field>
+            </field>
+            <field name="submitButton">
+                <default-field>
+                    <submit text="Run Report"/>
+                </default-field>
+            </field>
+            <field-layout>
+                <field-row-big>
+                    <field-ref name="periodDays"/>
+                    <field-ref name="dateField"/>
+                    <field-ref name="asOfDate"/>
+                    <field-ref name="submitButton"/>
+                </field-row-big>
+            </field-layout>
         </form-single>
 
         <form-list name="InvoiceAgingList" list="agingInfoList" skip-form="true" header-dialog="true"
                    show-csv-button="true" show-xlsx-button="true">
 
-            <field name="periodDays"><header-field><text-line size="6"/></header-field></field>
-            <field name="dateField"><header-field title="Age By"><drop-down><option key="dueDate" text="Due Date"/>
-                    <option key="invoiceDate" text="Invoice Date"/></drop-down></header-field></field>
-            <field name="asOfDate"><header-field><date-time type="date"/></header-field></field>
-            <field name="toPartyId"><header-field title="To"><drop-down allow-empty="true">
-                <dynamic-options transition="searchPartyList" server-search="true" min-length="2"/></drop-down></header-field></field>
+            <field name="periodDays">
+                <header-field>
+                    <text-line size="6"/>
+                </header-field>
+            </field>
+            <field name="dateField">
+                <header-field title="Age By">
+                    <drop-down>
+                        <option key="dueDate" text="Due Date"/>
+                        <option key="invoiceDate" text="Invoice Date"/>
+                    </drop-down>
+                </header-field>
+            </field>
+            <field name="asOfDate">
+                <header-field>
+                    <date-time type="date"/>
+                </header-field>
+            </field>
+            <field name="toPartyId">
+                <header-field title="To">
+                    <drop-down allow-empty="true">
+                        <dynamic-options transition="searchPartyList" server-search="true" min-length="2"/>
+                    </drop-down>
+                </header-field>
+            </field>
 
-            <field name="toPseudoId"><header-field title="To ID" show-order-by="true"/>
-                <default-field><link url="editParty" text="${toPseudoId}" link-type="anchor" parameter-map="[partyId:toPartyId]"/></default-field></field>
+            <field name="toPseudoId">
+                <header-field title="To ID" show-order-by="true"/>
+                <default-field>
+                    <link url="editParty" text="${toPseudoId}" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                </default-field>
+            </field>
             <field name="toName">
                 <header-field title="To Name" show-order-by="true"/>
-                <default-field><link url="editParty" text="${toName}" link-type="anchor" parameter-map="[partyId:toPartyId]"/></default-field>
+                <default-field>
+                    <link url="editParty" text="${toName}" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                </default-field>
             </field>
-            <field name="count"><header-field show-order-by="true"/><default-field><display/></default-field></field>
+            <field name="count">
+                <header-field show-order-by="true"/>
+                <default-field>
+                    <display/>
+                </default-field>
+            </field>
 
-            <field name="period0" align="right"><header-field title="Current" show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
-            <field name="period1" align="right"><header-field title="0 - ${periodDays} days" show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
-            <field name="period2" align="right"><header-field title="${periodDays+1} - ${periodDays*2} days" show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
-            <field name="period3" align="right"><header-field title="${periodDays*2+1} - ${periodDays*3} days" show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
-            <field name="period4" align="right"><header-field title="&gt; ${periodDays*3} days" show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
-            <field name="unpaidAmount" align="right"><header-field title="Unpaid" show-order-by="true"/><default-field>
-                <link url="findInvoice" text="${ec.l10n.format(unpaidAmount, '#,##0.00')}" link-type="anchor"
-                        parameter-map="[invoiceId:(invoiceIds.join(',')), invoiceId_op:'in']" condition="unpaidAmount &amp;&amp; invoiceIds"/>
-                <label text="${ec.l10n.format(unpaidAmount, '#,##0.00')}" condition="unpaidAmount &amp;&amp; !invoiceIds"/>
-            </default-field></field>
+            <field name="period0" align="right">
+                <header-field title="Current" show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
+            <field name="period1" align="right">
+                <header-field title="0 - ${periodDays} days" show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
+            <field name="period2" align="right">
+                <header-field title="${periodDays+1} - ${periodDays*2} days" show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
+            <field name="period3" align="right">
+                <header-field title="${periodDays*2+1} - ${periodDays*3} days" show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
+            <field name="period4" align="right">
+                <header-field title="&gt; ${periodDays*3} days" show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
+            <field name="unpaidAmount" align="right">
+                <header-field title="Unpaid" show-order-by="true"/>
+                <default-field>
+                    <link url="findInvoice" text="${ec.l10n.format(unpaidAmount, '#,##0.00')}" link-type="anchor"
+                          parameter-map="[invoiceId:(invoiceIds.join(',')), invoiceId_op:'in']"
+                          condition="unpaidAmount &amp;&amp; invoiceIds"/>
+                    <label text="${ec.l10n.format(unpaidAmount, '#,##0.00')}"
+                           condition="unpaidAmount &amp;&amp; !invoiceIds"/>
+                </default-field>
+            </field>
 
-            <field name="unappliedTotal" align="right"><header-field title="Overpaid" show-order-by="true"/><default-field>
-                <link url="findPayment" text="${ec.l10n.format(unappliedTotal, '#,##0.00')}" link-type="anchor"
-                        parameter-map="[paymentId:(paymentIds.join(',')), paymentId_op:'in']" condition="unappliedTotal &amp;&amp; paymentIds"/>
-                <label text="${ec.l10n.format(unappliedTotal, '#,##0.00')}" condition="unappliedTotal &amp;&amp; !paymentIds"/>
-            </default-field></field>
-            <field name="balanceDue" align="right"><header-field show-order-by="true"/>
-                <default-field><display format="#,##0.00"/></default-field></field>
+            <field name="unappliedTotal" align="right">
+                <header-field title="Overpaid" show-order-by="true"/>
+                <default-field>
+                    <link url="findPayment" text="${ec.l10n.format(unappliedTotal, '#,##0.00')}" link-type="anchor"
+                          parameter-map="[paymentId:(paymentIds.join(',')), paymentId_op:'in']"
+                          condition="unappliedTotal &amp;&amp; paymentIds"/>
+                    <label text="${ec.l10n.format(unappliedTotal, '#,##0.00')}"
+                           condition="unappliedTotal &amp;&amp; !paymentIds"/>
+                </default-field>
+            </field>
+            <field name="balanceDue" align="right">
+                <header-field show-order-by="true"/>
+                <default-field>
+                    <display format="#,##0.00"/>
+                </default-field>
+            </field>
 
-            <field name="findButton"><header-field title="Find"><submit/></header-field></field>
+            <field name="findButton">
+                <header-field title="Find">
+                    <submit/>
+                </header-field>
+            </field>
         </form-list>
     </widgets>
 </screen>

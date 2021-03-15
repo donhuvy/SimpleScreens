@@ -22,12 +22,13 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="asOfDate"/>
 
     <actions>
-        <service-call name="mantle.account.InvoiceServices.get#ReceivableStatementInfo" in-map="context" out-map="context"/>
+        <service-call name="mantle.account.InvoiceServices.get#ReceivableStatementInfo" in-map="context"
+                      out-map="context"/>
     </actions>
     <widgets>
         <render-mode>
             <text type="xsl-fo" location="component://SimpleScreens/template/account/ReceivableStatement.xsl-fo.ftl"
-                    template="true" encode="false" no-boundary-comment="true"/>
+                  template="true" encode="false" no-boundary-comment="true"/>
         </render-mode>
     </widgets>
 </screen>

@@ -1,18 +1,3 @@
-<#--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
-
-To the extent possible under law, the author(s) have dedicated all
-copyright and related and neighboring rights to this software to the
-public domain worldwide. This software is distributed without any
-warranty.
-
-You should have received a copy of the CC0 Public Domain Dedication
-along with this software (see the LICENSE.md file). If not, see
-<http://creativecommons.org/publicdomain/zero/1.0/>.
--->
-
-<#-- See the mantle.ledger.LedgerReportServices.run#CashFlowStatement service for data preparation -->
-
 <#assign showDetail = (detail! == "true")>
 <#assign currencyFormat = currencyFormat!"#,##0.00">
 
@@ -72,7 +57,7 @@ along with this software (see the LICENSE.md file). If not, see
     </#list>
     <#if classInfo.childClassInfoList?has_content>
         <tr<#if depth == 1> class="text-info"</#if>>
-            <td><strong>${ec.l10n.localize(classInfo.className + " Total")}</strong></td>
+            <td><strong>${ec.l10n.localize(classInfo.className + " Tổng")}</strong></td>
             <#if (timePeriodIdList?size > 1)>
                 <#assign beginningTotalBalance = (classInfo.totalBalanceByTimePeriod['ALL']!0) - (classInfo.totalPostedByTimePeriod['ALL']!0)>
                 <td class="text-right text-mono"><strong>${ec.l10n.format(classInfo.totalPostedByTimePeriod['ALL']!0, currencyFormat)}</strong></td>
@@ -125,7 +110,7 @@ along with this software (see the LICENSE.md file). If not, see
     </thead>
     <tbody>
         <tr style="border-top: solid black;">
-            <td><strong>${ec.l10n.localize("Operating Activities")}</strong></td>
+            <td><strong>${ec.l10n.localize("Hoạt động sản xuất - kinh doanh")}</strong></td>
             <#if (timePeriodIdList?size > 1)><td class="text-right text-mono"> </td><td class="text-right text-mono"> </td><td class="text-right text-mono"> </td></#if>
             <#list timePeriodIdList as timePeriodId><td class="text-right text-mono"> </td><td class="text-right text-mono"> </td><td class="text-right text-mono"> </td></#list>
         </tr>
